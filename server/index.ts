@@ -59,11 +59,24 @@ app.use((req, res, next) => {
   // ALWAYS serve the app on port 5000
   // this serves both the API and the client
   const port = 5000;
-  server.listen({
-    port,
-    host: "0.0.0.0",
-    reusePort: true,
-  }, () => {
-    log(`serving on port ${port}`);
-  });
+  log(`Starting server on port ${port}...`);
+    server.listen({
+      port,
+      host: "localhost", // Changed from 0.0.0.0 to localhost
+    })
+    .on('error', (error) => {
+      if ((error as any).code === 'ENOTSUP') {
+        // Try alternative configuration
+        server.listen(port, () => {
+          log(`serving on port ${port}`);
+        });
+      } else {
+        log(`Failed to start server: ${error.message}`);
+        process.exit(1);
+      }
+    })
+    .on('listening', () => {
+      log(`serving on port ${port}`);
+    });
+  // ...existing code...
 })();
